@@ -42,4 +42,4 @@ dIR3 cylindrical_morphism::del_inverse(const IR3 &q) const {
 	};
 }
 
-}; // end namespace gyronimo
+} // end namespace gyronimo

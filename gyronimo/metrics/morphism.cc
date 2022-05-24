@@ -24,12 +24,12 @@ IR3 morphism::to_covariant(const IR3 &q, const IR3 &A) const {
 
 // Returns the contravariant components of `A` in the position `q`.
 IR3 morphism::to_contravariant(const IR3 &q, const IR3 &A) const {
-	return contraction<second>(inverse_del(q), A);
+	return contraction<second>(del_inverse(q), A);
 }
 
 // Returns the cartesian vector from its covariant components `A` in position `q`.
 IR3 morphism::from_covariant(const IR3 &q, const IR3 &A) const {
-	return contraction<first>(inverse_del(q), A);
+	return contraction<first>(del_inverse(q), A);
 }
 
 // Returns the cartesian vector from its contravariant components `A` in position `q`.

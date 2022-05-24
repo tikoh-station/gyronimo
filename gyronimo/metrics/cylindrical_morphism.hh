@@ -37,6 +37,6 @@ private:
 
 }; // end class cylindrical_morphism
 
-}; // end namespace gyronimo
+} // end namespace gyronimo
 
 #endif // GYRONIMO_CYLINDRICAL_MORPH
