@@ -13,7 +13,7 @@ double morphism::jacobian(const IR3 &q) const {
 }
 
 // Returns the morphism's inverse derivatives, correspondent to the contravariant basis vectors in point `q`.
-dIR3 morphism::inverse_del(const IR3 &q) const {
+dIR3 morphism::del_inverse(const IR3 &q) const {
 	return gyronimo::inverse(del(q));
 }
 
