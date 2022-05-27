@@ -27,6 +27,7 @@ namespace gyronimo {
 
 IR3 contraction(const SM3& g, const IR3& B);
 IR3 cross_product(const IR3& A, const IR3& B, double jacobian);
+IR3 cartesian_cross_product(const IR3& A, const IR3& B);
 double inner_product(const IR3& A, const IR3& B);
 
 //! Index to contract in a templated `contraction` of multi-indexed objects.

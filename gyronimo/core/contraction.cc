@@ -34,6 +34,14 @@ IR3 cross_product(const IR3& A, const IR3& B, double jacobian) {
     (A[IR3::u]*B[IR3::v] - A[IR3::v]*B[IR3::u]) / jacobian};
 }
 
+//! Cartesian cross product: A and B are cartesian.
+IR3 cartesian_cross_product(const IR3& A, const IR3& B) {
+  return {
+    (A[IR3::v]*B[IR3::w] - A[IR3::w]*B[IR3::v]),
+    (A[IR3::w]*B[IR3::u] - A[IR3::u]*B[IR3::w]),
+    (A[IR3::u]*B[IR3::v] - A[IR3::v]*B[IR3::u])};
+}
+
 //! Contraction of a symmetric 3x3 matrix and a IR^3 vector.
 IR3 contraction(const SM3& g, const IR3& B) {
   return {
