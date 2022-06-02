@@ -1,6 +1,5 @@
-
-#ifndef GYRONIMO_CYLINDRICAL_MORPHISM
-#define GYRONIMO_CYLINDRICAL_MORPHISM
+#ifndef GYRONIMO_MORPHISM_CYLINDRICAL
+#define GYRONIMO_MORPHISM_CYLINDRICAL
 
 #include <cmath>
 
@@ -8,15 +7,15 @@
 
 namespace gyronimo {
 
-class cylindrical_morphism : public morphism {
+class morphism_cylindrical : public morphism {
 
 public:
 
 	//! Class Constructor
-	cylindrical_morphism() : morphism() {};
+	morphism_cylindrical() : morphism() {};
 
 	//! Class Destructor
-	~cylindrical_morphism() {};
+	~morphism_cylindrical() {};
 
 	//! Maps the curvilinear coordinates `q` into cartesian coordinates `x`.
 	IR3 operator()(const IR3 &q) const override;
@@ -35,8 +34,8 @@ public:
 
 private:
 
-}; // end class cylindrical_morphism
+}; // end class morphism_cylindrical
 
 } // end namespace gyronimo
 
-#endif // GYRONIMO_CYLINDRICAL_MORPH
+#endif // GYRONIMO_MORPHISM_CYLINDRICAL
