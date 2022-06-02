@@ -4,18 +4,19 @@
 #include <gyronimo/core/codata.hh>
 #include <gyronimo/core/contraction.hh>
 #include <gyronimo/fields/IR3field.hh>
-
+#include <gyronimo/metrics/morphism.hh>
 
 namespace gyronimo {
 
 class electromagnetic_system {
 
 public:
+
 	typedef std::array<double, 6> state;
 
 	electromagnetic_system(
 		double Lref, double Vref, double qom,
-		const IR3field* E, const IR3field* B);
+		const IR3field *E, const IR3field *B, const morphism *morph);
 	~electromagnetic_system() {};
 
 	state operator()(const state& x, double t) const;
@@ -39,6 +40,7 @@ private:
 	const IR3field* electric_field_;
 	const IR3field* magnetic_field_;
 	const double iEfield_time_factor_, iBfield_time_factor_;
+	const morphism *field_morph_;
 
 }; // end class electromagnetic_system
 
