@@ -16,7 +16,8 @@ public:
 
 	electromagnetic_system(
 		double Lref, double Vref, double qom,
-		const IR3field *E, const IR3field *B, const morphism *morph);
+		const IR3field *E, const IR3field *B,
+		const morphism *morph/*, const metric_covariant *metric*/);
 	~electromagnetic_system() {};
 
 	state operator()(const state& x, double t) const;
@@ -41,6 +42,7 @@ private:
 	const IR3field* magnetic_field_;
 	const double iEfield_time_factor_, iBfield_time_factor_;
 	const morphism *field_morph_;
+	const metric_covariant *metric_;
 
 }; // end class electromagnetic_system
 

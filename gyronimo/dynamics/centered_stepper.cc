@@ -94,63 +94,25 @@ centered_stepper::state centered_stepper::generate_initial_state(const IR3 &cart
 	odeint_adapter<electromagnetic_system> sys(&em);
 	boost::numeric::odeint::runge_kutta4<electromagnetic_system::state> rk4;
 
-	electromagnetic_system::state in = em.generate_state(cartesian_position, cartesian_velocity);
+	IR3 qk = cartesian_position;
+	IR3 uk = cartesian_velocity;
+	if(field_morph_) {
+		IR3 qk = field_morph_->inverse(cartesian_position);
+		IR3 uk = field_morph_->to_contravariant(qk, cartesian_velocity);
+	}
+	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;
 
 	rk4.do_step(sys, in, tinit, out, -0.5*dt);
-	IR3 xmh = em.get_position(out);
-	IR3 vmh = em.get_velocity(out);
+	IR3 qmh = em.get_position(out);
+	IR3 umh = em.get_velocity(out);
 
 	if(field_morph_) {
 
-		IR3 qk = field_morph_->inverse(cartesian_position);
-		IR3 qmh = field_morph_->inverse(xmh);
-		IR3 umh = field_morph_->to_contravariant(qmh, vmh);
-
+		IR3 vmh = field_morph_->from_contravariant(qmh, umh);
 		return generate_state(qk, umh, vmh);
 
-	} else return generate_state(cartesian_position, vmh, vmh);
-
-	// if(field_morph_) {
-
-	// 	// coordinate conversion to cartesian
-	// 	IR3 q_old = field_morph_->inverse(cartesian_position);
-	// 	dIR3 ek = field_morph_->del(q_old);
-
-	// 	// calculate fields
-	// 	IR3 Ek = {0, 0, 0};
-	// 	IR3 Bk = {0, 0, 0};
-	// 	if(electric_) {
-	// 		Ek = electric_->contravariant(q_old, tinit * iEfield_time_factor_);
-	// 		Ek = contraction<second>(ek, Ek);
-	// 	}
-	// 	if(magnetic_) {
-	// 		Bk = magnetic_->contravariant(q_old, tinit * iBfield_time_factor_);
-	// 		Bk = contraction<second>(ek, Bk);
-	// 	}
-
-	// 	IR3 vmh = cartesian_boris(cartesian_velocity, Oref_, Ek, Bk, (-0.5 * dt));
-
-	// 	IR3 xm1 = cartesian_position - dt * vmh;
-	// 	IR3 qm1 = field_morph_->inverse(xm1);
-	// 	dIR3 eem1 = field_morph_->del_inverse(qm1);
-	// 	dIR3 eek = inverse(ek);
-	// 	IR3 u_old = 0.5 * (contraction<second>(eek, vmh) + contraction<second>(eem1, vmh));
-
-	// 	return generate_state(q_old, u_old, vmh);
-
-	// } else {
-
-	// 	// calculate fields
-	// 	IR3 Ek = {0, 0, 0};
-	// 	IR3 Bk = {0, 0, 0};
-	// 	if(electric_) Ek = electric_->contravariant(cartesian_position, tinit * iEfield_time_factor_);
-	// 	if(magnetic_) Bk = magnetic_->contravariant(cartesian_position, tinit * iBfield_time_factor_);
-
-	// 	IR3 vmh = cartesian_boris(cartesian_velocity, Oref_, Ek, Bk, -0.5*dt);
-
-	// 	return generate_state(cartesian_position, vmh, vmh);
-	// }
+	} else return generate_state(qk, umh, umh);
 
 }
 

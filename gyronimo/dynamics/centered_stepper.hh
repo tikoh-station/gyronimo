@@ -23,14 +23,16 @@ public:
 	typedef std::array<double, 9> state;
 
 	//! Class Constructor.
-	centered_stepper(const double Lref, const double Vref, const double qom, const IR3field *E, const IR3field *B, const morphism *morph = NULL)
+	centered_stepper(const double Lref, const double Vref, const double qom, 
+			const IR3field *E, const IR3field *B, 
+			const morphism *morph = NULL, const metric_covariant *metric = NULL)
 			: Lref_(Lref), Vref_(Vref), Tref_(Lref/Vref), qom_(qom),
 			Oref_(	B ? qom * gyronimo::codata::e / gyronimo::codata::m_proton * B->m_factor() : 
 					E ? qom * gyronimo::codata::e / gyronimo::codata::m_proton * E->m_factor() : 0), 
 			electric_(E), magnetic_(B),
 			iBfield_time_factor_(B ? Tref_ / B->t_factor() : 0.0),
 			iEfield_time_factor_(E ? Tref_ / E->t_factor() : 0.0), 
-			field_morph_(morph) {
+			field_morph_(morph), metric_(metric) {
 	
 		//@todo test if fields are consistent (normalization and cartesian metric)
 	};
@@ -85,6 +87,7 @@ private:
 	const double iBfield_time_factor_;
 	const double iEfield_time_factor_;
 	const morphism *field_morph_;
+	const metric_covariant *metric_;
 
 	//! Performs a boris step in cartesian coordinates.
 	IR3 cartesian_boris(const IR3 &vmh, const double &Oref, const IR3 &Ek, const IR3 &Bk, const double &dt) const;

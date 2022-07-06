@@ -76,25 +76,26 @@ cylindrical_boris::state cylindrical_boris::generate_initial_state(
 	odeint_adapter<electromagnetic_system> sys(&em);
 	boost::numeric::odeint::runge_kutta4<electromagnetic_system::state> rk4;
 
-	electromagnetic_system::state in = em.generate_state(cartesian_position, cartesian_velocity);
+	IR3 qk = cartesian_position;
+	IR3 uk = cartesian_velocity;
+	if(field_morph_) {
+		IR3 qk = field_morph_->inverse(cartesian_position);
+		IR3 uk = field_morph_->to_contravariant(qk, cartesian_velocity);
+	}
+	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;
 
 	rk4.do_step(sys, in, tinit, out, -0.5*dt);
-	IR3 xmh = em.get_position(out);
-	IR3 vmh = em.get_velocity(out);
-
-	rk4.do_step(sys, in, tinit, out, -dt);
-	IR3 xm1 = em.get_position(out);
+	IR3 qmh = em.get_position(out);
+	IR3 umh = em.get_velocity(out);
 
 	if(field_morph_) {
 
-		IR3 qm1 = field_morph_->inverse(xm1);
-		IR3 qmh = field_morph_->inverse(xmh);
-		IR3 umh = field_morph_->to_contravariant(qmh, vmh);
+		IR3 vmh = field_morph_->from_contravariant(qmh, umh);
+		umh = field_morph_->to_contravariant(qk, vmh);
+		return generate_state(qk, umh);
 
-		return generate_state(qm1, umh);
-
-	} else return generate_state(cartesian_position, vmh);
+	} else return generate_state(cartesian_position, umh);
 
 }
 
