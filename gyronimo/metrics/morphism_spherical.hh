@@ -26,6 +26,7 @@ public:
 
 	//! Returns the morphism's derivatives, correspondent to the covariant basis vectors in point `q`.
 	dIR3 del(const IR3 &q) const override;
+	dSM3 g_del(const IR3 &q) const override;
 
 	//! Returns the jacobian of the transformation in point `q`.
 	double jacobian(const IR3 &q) const override;

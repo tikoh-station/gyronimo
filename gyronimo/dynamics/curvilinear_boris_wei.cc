@@ -32,8 +32,6 @@ curvilinear_boris_wei::state curvilinear_boris_wei::do_step(const curvilinear_bo
 
 		// perform cartesian step
 		IR3 vph = cartesian_boris(vmh, Oref_, Ek, Bk, dt);
-		// std::cout << "vmh: [ " << vmh[0] << " " << vmh[1] << " " << vmh[2] << " ]" << std::endl;
-		// std::cout << "vph: [ " << vph[0] << " " << vph[1] << " " << vph[2] << " ]" << std::endl;
 
 		IR3 uuph = contraction<second>(eek, vph);
 		IR3 qph = qk + (0.5 * dt) * uuph;

@@ -32,6 +32,20 @@ dIR3 morphism_spherical::del(const IR3 &q) const {
 	};
 }
 
+dSM3 morphism_spherical::g_del(const IR3 &q) const {
+	double r = q[IR3::u];
+	double sn_theta = std::sin(q[IR3::w]);
+	double sn_2theta = std::sin(2 * q[IR3::w]);
+	return {
+		0, 0, 0, // g_uu
+		0, 0, 0, // g_uv
+		0, 0, 0, // g_uw
+		2 * r * sn_theta * sn_theta, 0, r * r * sn_2theta, // g_vv
+		0, 0, 0, // g_vw
+		2 * r, 0, 0  // g_ww
+	};
+}
+
 // Returns the jacobian of the transformation in point `q`.
 double morphism_spherical::jacobian(const IR3 &q) const {
 	return q[IR3::u] * q[IR3::u] * sin(IR3::w);

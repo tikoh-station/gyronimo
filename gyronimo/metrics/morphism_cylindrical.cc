@@ -25,6 +25,18 @@ dIR3 morphism_cylindrical::del(const IR3 &q) const {
 	};
 }
 
+dSM3 morphism_cylindrical::g_del(const IR3 &q) const {
+	double r  = q[IR3::u];
+	return {
+		0, 0, 0, // g_uu
+		0, 0, 0, // g_uv
+		0, 0, 0, // g_uw
+		2 * r, 0, 0, // g_vv
+		0, 0, 0, // g_vw
+		0, 0, 0  // g_ww
+	};
+}
+
 // Returns the jacobian of the transformation in point `q`.
 double morphism_cylindrical::jacobian(const IR3 &q) const {
 	return q[IR3::u];

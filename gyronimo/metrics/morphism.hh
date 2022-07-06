@@ -45,12 +45,17 @@ public:
 	virtual dIR3 del(const IR3 &q) const = 0;
 	virtual dIR3 tan_basis(const IR3& q) const {return del(q);};
 
+	// //! Returns the morphism's second derivatives, calculated in point `q`.
+	// virtual dSM3 del2(const IR3& q) const = 0;
+	virtual dSM3 g_del(const IR3& q) const = 0; // to evade the problem of not getting a metric through the morphism (yet)
+
 	//! Returns the jacobian of the transformation in point `q`.
 	virtual double jacobian(const IR3 &q) const;
 
 	//! Returns the morphism's inverse derivatives, correspondent to the contravariant basis vectors in point `q`.
 	virtual dIR3 del_inverse(const IR3 &q) const;
 	virtual dIR3 dual_basis(const IR3& q) const {return del_inverse(q);};
+
 
 	//! Returns the covariant components of cartesian `A` in position `q`.
 	virtual IR3 to_covariant(const IR3 &q, const IR3 &A) const;
