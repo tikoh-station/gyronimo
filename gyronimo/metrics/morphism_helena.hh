@@ -37,6 +37,7 @@ class morphism_helena : public morphism {
   virtual IR3 operator()(const IR3& q) const override;
   virtual IR3 inverse(const IR3& x) const override;
   virtual dIR3 del(const IR3& q) const override;
+  double jacobian(const IR3 &q) const override;
   virtual dSM3 g_del(const IR3& q) const override;
 //   virtual dSM3 del2(const IR3& q) const override;
   const parser_helena* parser() const {return parser_;};

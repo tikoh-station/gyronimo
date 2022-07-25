@@ -1,6 +1,8 @@
 #ifndef GYRONIMO_ELECTROMAGNETIC_SYSTEM
 #define GYRONIMO_ELECTROMAGNETIC_SYSTEM
 
+#include <iostream>
+
 #include <gyronimo/core/codata.hh>
 #include <gyronimo/core/contraction.hh>
 #include <gyronimo/fields/IR3field.hh>

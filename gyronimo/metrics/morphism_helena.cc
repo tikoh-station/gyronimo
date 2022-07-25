@@ -86,7 +86,7 @@ IR3 morphism_helena::inverse(const IR3& X) const {
   gsl_vector_set(guess_q, 0, 0.5);
   gsl_vector_set(guess_q, 1, 0.0);
 
-  const double tolerance = 1.0e-06;
+  const double tolerance = 1.0e-08;
   gsl_multiroot_fsolver_set(s, &f, guess_q);
   for (auto i : std::views::iota(1, 1000)) {
     // reduce2(s->x->data[0], s->x->data[1]);
@@ -121,6 +121,15 @@ dIR3 morphism_helena::del(const IR3& q) const {
   double cos = std::cos(phi), sin = std::sin(phi);
   return {Ru*cos, Rv*cos, -R*sin, -Ru*sin, -Rv*sin, -R*cos,
       (*z_).partial_u(s, chi), (*z_).partial_v(s, chi), 0.0};
+}
+double morphism_helena::jacobian(const IR3 &q) const {
+	double s = q[IR3::u];
+	double chi = this->reduce_chi(q[IR3::v]);
+	double guu = squaredR0_ * (*guu_)(s, chi);
+	double guv = squaredR0_ * (*guv_)(s, chi);
+	double gvv = squaredR0_ * (*gvv_)(s, chi);
+	double gww = squaredR0_ * (*gww_)(s, chi);
+	return std::sqrt((guu*gvv - guv*guv)*gww);
 }
 dSM3 morphism_helena::g_del(const IR3& q) const {
   double s = q[IR3::u];

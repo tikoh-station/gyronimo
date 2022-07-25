@@ -7,7 +7,7 @@ double morphism::jacobian(const IR3 &q) const {
 	dIR3 e = del(q);
 	return (
 		e[dIR3::uu] * (e[dIR3::vv] * e[dIR3::ww] - e[dIR3::vw] * e[dIR3::wv]) +
-		e[dIR3::uv] * (e[dIR3::vu] * e[dIR3::ww] - e[dIR3::vw] * e[dIR3::wu]) +
+		e[dIR3::uv] * (e[dIR3::vw] * e[dIR3::wu] - e[dIR3::vu] * e[dIR3::ww]) +
 		e[dIR3::uw] * (e[dIR3::vu] * e[dIR3::wv] - e[dIR3::vv] * e[dIR3::wu])
 	);
 }
