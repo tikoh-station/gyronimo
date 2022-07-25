@@ -13,7 +13,6 @@ ark4c::state ark4c::do_step(const ark4c::state &in, const double t, const double
 	boost::numeric::odeint::runge_kutta4<electromagnetic_system::state> rk4;
 
 	electromagnetic_system::state st0 = em_.generate_state(q0, u0);
-
 	electromagnetic_system::state dst0 = em_(st0, t);
 	IR3 du0 = em_.get_velocity(dst0);
 
@@ -23,19 +22,11 @@ ark4c::state ark4c::do_step(const ark4c::state &in, const double t, const double
 	IR3 u1 = em_.get_velocity(st1);
 
 	// create the interpolator
-	IR3 qA = interpolate(q0, q1, u0, u1, du0, alpha_, dt);
-	IR3 qB = interpolate(q0, q1, u0, u1, du0, beta_,  dt);
-	IR3 qC = interpolate(q0, q1, u0, u1, du0, gamma_, dt);
-	// std::cout << "q1: [ " << q1[IR3::u] << " " << q1[IR3::v] << " " << q1[IR3::w] << " ]" << std::endl;
-	// std::cout << "u1: [ " << u1[IR3::u] << " " << u1[IR3::v] << " " << u1[IR3::w] << " ]" << std::endl;
-	// std::cout << "du0: [ " << du0[IR3::u] << " " << du0[IR3::v] << " " << du0[IR3::w] << " ]" << std::endl;
-	// std::cout << "qA: [ " << qA[IR3::u] << " " << qA[IR3::v] << " " << qA[IR3::w] << " ]" << std::endl;
-	// std::cout << "qB: [ " << qB[IR3::u] << " " << qB[IR3::v] << " " << qB[IR3::w] << " ]" << std::endl;
-	// std::cout << "qC: [ " << qC[IR3::u] << " " << qC[IR3::v] << " " << qC[IR3::w] << " ]" << std::endl;
+	IR3 qA = interpolate(q0, q1, u0, u1, du0, IR3::u, dt);
+	IR3 qB = interpolate(q0, q1, u0, u1, du0, IR3::v, dt);
+	IR3 qC = interpolate(q0, q1, u0, u1, du0, IR3::w, dt);
 
 	// advance particle across phase-space
-
-	dIR3 ek = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 	IR3 v0 = u0;
 	if(field_morph_) v0 = field_morph_->from_contravariant(q0, u0);
 
@@ -60,64 +51,47 @@ ark4c::state ark4c::do_step(const ark4c::state &in, const double t, const double
 				v_new[IR3::u], v_new[IR3::v], v_new[IR3::w]};
 	}
 
+	// // THIRD ORDER CONFIGURATION WITH RUNGE KUTTA 4
+
+	// electromagnetic_system::state st1;
+	// electromagnetic_system::state st2;
+	// electromagnetic_system::state st3;
+
+	// rk4.do_step(sys, st0, t, st1, alpha_ * dt);
+	// rk4.do_step(sys, st0, t, st2, beta_  * dt);
+	// rk4.do_step(sys, st0, t, st3, gamma_ * dt);
+
+	// IR3 q1 = em.get_position(st1);
+	// IR3 q2 = em.get_position(st2);
+	// IR3 q3 = em.get_position(st3);
+
+	// // advance particle across phase-space
+
+	// dIR3 ek = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+	// IR3 v0 = u0;
+	// if(field_morph_) v0 = field_morph_->from_contravariant(q0, u0);
+
+	// auto [dx1, v1] = displacement(q1, v0, t + alpha_ * dt, a0_ * dt);
+	// auto [dx2, v2] = displacement(q2, v1, t + beta_  * dt, b0_ * dt);
+	// auto [dx3, v3] = displacement(q3, v2, t + gamma_ * dt, c0_ * dt);
+
 	// if(field_morph_) {
 
-	// 	IR3 q_new = q1;
-	// 	IR3 u_new = field_morph_->to_contravariant(q_new, vC);
+	// 	IR3 q_new = straight_line_step(q0, dx1 + dx2 + dx3);
+	// 	IR3 u_new = field_morph_->to_contravariant(q_new, v3);
 
 	// 	return {q_new[IR3::u], q_new[IR3::v], q_new[IR3::w], 
 	// 			u_new[IR3::u], u_new[IR3::v], u_new[IR3::w]};
 
 	// } else {
 
-	// 	IR3 x_new = q1;
-	// 	IR3 v_new = vC;
+	// 	IR3 x_new = q0 + dx1 + dx2 + dx3;
+	// 	IR3 v_new = v3;
 
 	// 	return {x_new[IR3::u], x_new[IR3::v], x_new[IR3::w], 
 	// 			v_new[IR3::u], v_new[IR3::v], v_new[IR3::w]};
 	// }
-
-	/*/ THIRD ORDER CONFIGURATION WITH RUNGE KUTTA 4
-
-	electromagnetic_system::state st1;
-	electromagnetic_system::state st2;
-	electromagnetic_system::state st3;
-
-	rk4.do_step(sys, st0, t, st1, alpha_ * dt);
-	rk4.do_step(sys, st0, t, st2, beta_  * dt);
-	rk4.do_step(sys, st0, t, st3, gamma_ * dt);
-
-	IR3 q1 = em.get_position(st1);
-	IR3 q2 = em.get_position(st2);
-	IR3 q3 = em.get_position(st3);
-
-	// advance particle across phase-space
-
-	dIR3 ek = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-	IR3 v0 = u0;
-	if(field_morph_) v0 = field_morph_->from_contravariant(q0, u0);
-
-	auto [dx1, v1] = displacement(q1, v0, t + alpha_ * dt, a0_ * dt);
-	auto [dx2, v2] = displacement(q2, v1, t + beta_  * dt, b0_ * dt);
-	auto [dx3, v3] = displacement(q3, v2, t + gamma_ * dt, c0_ * dt);
-
-	if(field_morph_) {
-
-		IR3 q_new = straight_line_step(q0, dx1 + dx2 + dx3);
-		IR3 u_new = field_morph_->to_contravariant(q_new, v3);
-
-		return {q_new[IR3::u], q_new[IR3::v], q_new[IR3::w], 
-				u_new[IR3::u], u_new[IR3::v], u_new[IR3::w]};
-
-	} else {
-
-		IR3 x_new = q0 + dx1 + dx2 + dx3;
-		IR3 v_new = v3;
-
-		return {x_new[IR3::u], x_new[IR3::v], x_new[IR3::w], 
-				v_new[IR3::u], v_new[IR3::v], v_new[IR3::w]};
-	}
-	//*/
+	// //
 }
 
 // Returns the vector position of the state normalized to `Lref`.
@@ -301,13 +275,16 @@ std::pair<IR3, IR3> ark4c::displacement(const IR3 &q_field, IR3 v_old, const dou
 }
 
 // Interpolate at time t \element [0, 1]
-IR3 ark4c::interpolate(IR3 q0, IR3 q1, IR3 u0, IR3 u1, IR3 du0, double k, double dt) const {
-	double a0 = (4 - 3 * k) * k * k * k;
-	double a1 = dt * (k - 1) * k;
-	double a2 = (2 * k * k - k - 1);
-	double a3 = 0.5 * a1 * a1;
+IR3 ark4c::interpolate(IR3 q0, IR3 q1, IR3 u0, IR3 u1, IR3 du0, IR3::index i, double dt) const {
+	// double a0 = (4 - 3 * k) * k * k * k;
+	// double a1 = dt * (k - 1) * k;
+	// double a2 = (2 * k * k - k - 1);
+	// double a3 = 0.5 * a1 * a1;
 
-	IR3 q = (1 - a0) * q0 + a0 * q1 + (a1 * a2) * u0 + (a1 * k * k) * u1 + a3 * du0;
+	// IR3 q = (1 - a0) * q0 + a0 * q1 + (a1 * a2) * u0 + (a1 * k * k) * u1 + a3 * du0;
+	// return q;
+
+	IR3 q = (1 - k1_[i]) * q0 + k1_[i] * q1 + (dt * k2_[i]) * u0 + (dt * k3_[i]) * u1 + (dt * dt * k4_[i]) * du0;
 	return q;
 }
 
