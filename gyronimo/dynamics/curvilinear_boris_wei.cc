@@ -89,6 +89,48 @@ double curvilinear_boris_wei::get_kinetic_energy(const curvilinear_boris_wei::st
 	} else return s[3]*s[3] + s[4]*s[4] + s[5]*s[5];
 }
 
+// Returns the parallel energy of the state, normalized to `Uref`.
+double curvilinear_boris_wei::get_parallel_energy(const curvilinear_boris_wei::state& s, double &time) const {
+	IR3 q = {s[6], s[7], s[8]};
+	IR3 u = {s[3], s[4], s[5]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 v = field_morph_->from_contravariant(q, u);
+			IR3 u_cov = field_morph_->to_covariant(q, v);
+			double vpp = inner_product(u_cov, b);
+			return vpp * vpp;
+		} else {
+			double vpp = inner_product(u, b);
+			return vpp * vpp;
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
+// Returns the perpendicular energy of the state, normalized to `Uref`.
+double curvilinear_boris_wei::get_perpendicular_energy(const curvilinear_boris_wei::state& s, double &time) const {
+	IR3 q = {s[6], s[7], s[8]};
+	IR3 u = {s[3], s[4], s[5]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 v = field_morph_->from_contravariant(q, u);
+			IR3 b_cartesian = field_morph_->from_contravariant(q, b);
+			IR3 vperp = cartesian_cross_product(v, b_cartesian);
+			return inner_product(vperp, vperp);
+		} else {
+			IR3 vperp = cartesian_cross_product(u, b);
+			return inner_product(vperp, vperp);
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
 // Returns the `curvilinear_boris_wei::state` from a normalized point in phase-space.
 curvilinear_boris_wei::state curvilinear_boris_wei::generate_state(const IR3 &pos, const IR3 &vel, const IR3 &pph) const {
 	return {pos[IR3::u], pos[IR3::v], pos[IR3::w],
@@ -107,8 +149,8 @@ curvilinear_boris_wei::state curvilinear_boris_wei::generate_initial_state(
 	IR3 qk = cartesian_position;
 	IR3 uk = cartesian_velocity;
 	if(field_morph_) {
-		IR3 qk = field_morph_->inverse(cartesian_position);
-		IR3 uk = field_morph_->to_contravariant(qk, cartesian_velocity);
+		qk = field_morph_->inverse(cartesian_position);
+		uk = field_morph_->to_contravariant(qk, cartesian_velocity);
 	}
 	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;

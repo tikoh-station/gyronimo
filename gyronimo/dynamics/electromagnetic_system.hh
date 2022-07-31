@@ -1,8 +1,6 @@
 #ifndef GYRONIMO_ELECTROMAGNETIC_SYSTEM
 #define GYRONIMO_ELECTROMAGNETIC_SYSTEM
 
-#include <iostream>
-
 #include <gyronimo/core/codata.hh>
 #include <gyronimo/core/contraction.hh>
 #include <gyronimo/fields/IR3field.hh>
@@ -19,7 +17,7 @@ public:
 	electromagnetic_system(
 		double Lref, double Vref, double qom,
 		const IR3field *E, const IR3field *B,
-		const morphism *morph/*, const metric_covariant *metric*/);
+		const morphism *morph);
 	~electromagnetic_system() {};
 
 	state operator()(const state& x, double t) const;
@@ -35,6 +33,7 @@ public:
 	double Oref() const {return Oref_;};
 	const IR3field* electric_field() const {return electric_field_;};
 	const IR3field* magnetic_field() const {return magnetic_field_;};
+	const morphism* morph() const {return field_morph_;};
 
 private:
 
@@ -44,7 +43,6 @@ private:
 	const IR3field* magnetic_field_;
 	const double iEfield_time_factor_, iBfield_time_factor_;
 	const morphism *field_morph_;
-	const metric_covariant *metric_;
 
 }; // end class electromagnetic_system
 

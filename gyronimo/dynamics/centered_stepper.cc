@@ -80,6 +80,46 @@ double centered_stepper::get_kinetic_energy(const centered_stepper::state& s) {
 	return s[6]*s[6] + s[7]*s[7] + s[8]*s[8];
 }
 
+// Returns the parallel energy of the state, normalized to `Uref`.
+double centered_stepper::get_parallel_energy(const centered_stepper::state& s, double &time) const {
+	IR3 q = {s[0], s[1], s[2]};
+	IR3 v = {s[6], s[7], s[8]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 u_cov = field_morph_->to_covariant(q, v);
+			double vpp = inner_product(u_cov, b);
+			return vpp * vpp;
+		} else {
+			double vpp = inner_product(v, b);
+			return vpp * vpp;
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
+// Returns the perpendicular energy of the state, normalized to `Uref`.
+double centered_stepper::get_perpendicular_energy(const centered_stepper::state& s, double &time) const {
+	IR3 q = {s[0], s[1], s[2]};
+	IR3 v = {s[6], s[7], s[8]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 b_cartesian = field_morph_->from_contravariant(q, b);
+			IR3 vperp = cartesian_cross_product(v, b_cartesian);
+			return inner_product(vperp, vperp);
+		} else {
+			IR3 vperp = cartesian_cross_product(v, b);
+			return inner_product(vperp, vperp);
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
 // Returns the `centered_stepper::state` from a normalized point in phase-space.
 centered_stepper::state centered_stepper::generate_state(const IR3 &pos, const IR3 &vel, const IR3 &vct) const {
 	return {pos[IR3::u], pos[IR3::v], pos[IR3::w],
@@ -97,8 +137,8 @@ centered_stepper::state centered_stepper::generate_initial_state(const IR3 &cart
 	IR3 qk = cartesian_position;
 	IR3 uk = cartesian_velocity;
 	if(field_morph_) {
-		IR3 qk = field_morph_->inverse(cartesian_position);
-		IR3 uk = field_morph_->to_contravariant(qk, cartesian_velocity);
+		qk = field_morph_->inverse(cartesian_position);
+		uk = field_morph_->to_contravariant(qk, cartesian_velocity);
 	}
 	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;

@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include <utility>
-#include <iostream>
 
 #include <gyronimo/core/error.hh>
 #include <gyronimo/core/codata.hh>
@@ -26,38 +25,14 @@ public:
 	typedef std::array<double,6> state;
 
 	//! Class Constructor.
-	ark4c(const double Lref, const double Vref, const double qom, const IR3field *E, const IR3field *B, const morphism *morph = NULL)
-			: Lref_(Lref), Vref_(Vref), Tref_(Lref/Vref), qom_(qom),
-			Oref_(	B ? qom * gyronimo::codata::e * Tref_ / gyronimo::codata::m_proton * B->m_factor() : 
-					E ? qom * gyronimo::codata::e * Tref_ / gyronimo::codata::m_proton * E->m_factor() : 0), 
-			iOref_(	B ? 1 / Oref_ : E ? 1 / Oref_ : 0), electric_(E), magnetic_(B),
-			iBfield_time_factor_(B ? Tref_ / B->t_factor() : 0.0),
-			iEfield_time_factor_(E ? Tref_ / E->t_factor() : 0.0), 
-			field_morph_(morph), 
-			em_(Lref, Vref, qom, E, B, morph), sys_(&em_),
-			a0_((2. + std::pow(2., -1./3.) + std::pow(2., 1./3.)) / 3.), b0_(1. - 2. * a0_), c0_(a0_),
-			alpha_(0.5 * a0_), beta_(0.5), gamma_(1. - alpha_),
-			k0_({alpha_, beta_, gamma_}), 
-			k1_((4 - 3 * k0_) * k0_ * k0_ * k0_),
-			k2_((k0_ - 1) * k0_ * (2 * k0_ * k0_ - k0_ - 1)), 
-			k3_((k0_ - 1) * k0_ * k0_ * k0_), 
-			k4_((0.5 * (k0_ - 1) * (k0_ - 1) * k0_ * k0_)) {
-			// a0_(7./24.), b0_(0.75), c0_(-1./24.),
-			// alpha_(0), beta_(2./3.), gamma_(0) {
-	
-		//@todo test if fields are consistent (normalization and cartesian metric)
-
-		// std::cout << "ark4c parameter list:" << std::endl;
-		// std::cout << "a0: " << a0_ << "\tb0: " << b0_ << "\tc0: " << c0_ << std::endl;
-		// std::cout << "alpha: " << alpha_ << "\tbeta: " << beta_ << "\tgamma: " << gamma_ << std::endl;
-		// std::cout << std::endl;
-	};
+	ark4c(const double Lref, const double Vref, const double qom, 
+		const IR3field *E, const IR3field *B, const morphism *morph = NULL);
 
 	//! Class Destructor.
 	~ark4c() {};
 
 	//! Returns the order of the method.
-	unsigned short order() const {return 2;};
+	unsigned short order() const {return 4;};
 
 	//! Performs a time step `dt` update to the state `in` and returns the result.
 	state do_step(const state &in, const double t, const double dt) const;

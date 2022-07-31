@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include <gyronimo/core/error.hh>
 #include <gyronimo/core/codata.hh>
 #include <gyronimo/fields/IR3field.hh>
 #include <gyronimo/metrics/morphism.hh>
@@ -50,6 +51,8 @@ public:
 	IR3 get_velocity(const state& s);
 	//! Returns the kinetic energy of the state, normalized to `Uref`.
 	double get_kinetic_energy(const state& s);
+	double get_parallel_energy(const state& s, double &time) const;
+	double get_perpendicular_energy(const state& s, double &time) const;
 
 	//! Returns the `curvilinear_boris::state` from a normalized point in phase-space.
 	state generate_state(const IR3 &position, const IR3 &velocity, const IR3 &velocity_position) const;

@@ -79,6 +79,48 @@ double classical_boris::get_kinetic_energy(const classical_boris::state& s) cons
 	} else return s[3]*s[3] + s[4]*s[4] + s[5]*s[5];
 }
 
+// Returns the parallel energy of the state, normalized to `Uref`.
+double classical_boris::get_parallel_energy(const classical_boris::state& s, double &time) const {
+	IR3 q = {s[0], s[1], s[2]};
+	IR3 u = {s[3], s[4], s[5]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 v = field_morph_->from_contravariant(q, u);
+			IR3 u_cov = field_morph_->to_covariant(q, v);
+			double vpp = inner_product(u_cov, b);
+			return vpp * vpp;
+		} else {
+			double vpp = inner_product(u, b);
+			return vpp * vpp;
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
+// Returns the perpendicular energy of the state, normalized to `Uref`.
+double classical_boris::get_perpendicular_energy(const classical_boris::state& s, double &time) const {
+	IR3 q = {s[0], s[1], s[2]};
+	IR3 u = {s[3], s[4], s[5]};
+	if(magnetic_) {
+		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
+		if(field_morph_) {
+			IR3 v = field_morph_->from_contravariant(q, u);
+			IR3 b_cartesian = field_morph_->from_contravariant(q, b);
+			IR3 vperp = cartesian_cross_product(v, b_cartesian);
+			return inner_product(vperp, vperp);
+		} else {
+			IR3 vperp = cartesian_cross_product(u, b);
+			return inner_product(vperp, vperp);
+		}
+	} else {
+		error(__func__, __FILE__, __LINE__, "null magnetic field.", 1);
+		return 0;
+	}
+}
+
 // Returns the `classical_boris::state` from a normalized point in phase-space.
 classical_boris::state classical_boris::generate_state(const IR3 &pos, const IR3 &vel) const {
 	return {pos[IR3::u], pos[IR3::v], pos[IR3::w],

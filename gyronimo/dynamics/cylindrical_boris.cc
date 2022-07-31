@@ -79,8 +79,8 @@ cylindrical_boris::state cylindrical_boris::generate_initial_state(
 	IR3 qk = cartesian_position;
 	IR3 uk = cartesian_velocity;
 	if(field_morph_) {
-		IR3 qk = field_morph_->inverse(cartesian_position);
-		IR3 uk = field_morph_->to_contravariant(qk, cartesian_velocity);
+		qk = field_morph_->inverse(cartesian_position);
+		uk = field_morph_->to_contravariant(qk, cartesian_velocity);
 	}
 	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;
