@@ -40,7 +40,7 @@ public:
 	unsigned short order() const {return 2;};
 
 	//! Performs a time step `dt` update to the state `in` and returns the result.
-	state do_step(const state &in, const double t, const double dt);
+	state do_step(const state &in, const double t, const double dt) const;
 
 	//! Returns the vector position of the state normalized to `Lref`.
 	IR3 get_position(const state& s) const;

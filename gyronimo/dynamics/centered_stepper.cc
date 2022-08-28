@@ -66,17 +66,17 @@ centered_stepper::state centered_stepper::do_step(const centered_stepper::state 
 }
 
 // Returns the vector position of the state normalized to `Lref`.
-IR3 centered_stepper::get_position(const centered_stepper::state& s) {
+IR3 centered_stepper::get_position(const centered_stepper::state& s) const {
 	return {s[0], s[1], s[2]};
 }
 
 // Returns the vector velocity of the state normalized to `Vref`.
-IR3 centered_stepper::get_velocity(const centered_stepper::state& s) {
+IR3 centered_stepper::get_velocity(const centered_stepper::state& s) const {
 	return {s[3], s[4], s[5]};
 }
 
 // Returns the kinetic energy of the state, normalized to `Uref`.
-double centered_stepper::get_kinetic_energy(const centered_stepper::state& s) {
+double centered_stepper::get_kinetic_energy(const centered_stepper::state& s) const {
 	return s[6]*s[6] + s[7]*s[7] + s[8]*s[8];
 }
 

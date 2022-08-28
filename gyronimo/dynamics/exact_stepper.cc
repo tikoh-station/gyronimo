@@ -3,7 +3,8 @@
 namespace gyronimo {
 
 // Performs a time step `dt` update to the state `in` and returns the result.
-exact_stepper::state exact_stepper::do_step(const exact_stepper::state &in, const double t, const double dt) const {
+exact_stepper::state exact_stepper::do_step(
+		const exact_stepper::state &in, const double t, const double dt) const {
 
 	// extract position and velocity from state
 	IR3 q_old = get_position(in);

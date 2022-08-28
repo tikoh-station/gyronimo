@@ -48,11 +48,11 @@ public:
 	state do_step(const state &in, const double t, const double dt) const;
 
 	//! Returns the vector position of the state normalized to `Lref`.
-	IR3 get_position(const state& s);
+	IR3 get_position(const state& s) const;
 	//! Returns the vector velocity of the state normalized to `Vref`.
-	IR3 get_velocity(const state& s);
+	IR3 get_velocity(const state& s) const;
 	//! Returns the kinetic energy of the state, normalized to `Uref`.
-	double get_kinetic_energy(const state& s);
+	double get_kinetic_energy(const state& s) const;
 	double get_parallel_energy(const state& s, double &time) const;
 	double get_perpendicular_energy(const state& s, double &time) const;
 

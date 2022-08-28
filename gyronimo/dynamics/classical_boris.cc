@@ -3,7 +3,8 @@
 namespace gyronimo {
 
 // Performs a time step `dt` update to the state `in` and returns the result.
-classical_boris::state classical_boris::do_step(const classical_boris::state &in, const double t, const double dt) {
+classical_boris::state classical_boris::do_step(
+		const classical_boris::state &in, const double t, const double dt) const {
 	
 	// extract position and velocity from state
 	IR3 q_old = get_position(in);

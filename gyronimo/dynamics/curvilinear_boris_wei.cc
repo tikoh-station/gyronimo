@@ -22,11 +22,11 @@ curvilinear_boris_wei::state curvilinear_boris_wei::do_step(const curvilinear_bo
 		IR3 Ek = {0, 0, 0};
 		IR3 Bk = {0, 0, 0};
 		if(electric_) {
-			Ek = electric_->contravariant(qk, t * iEfield_time_factor_);
+			Ek = electric_->contravariant(qk, (t+dt) * iEfield_time_factor_);
 			Ek = contraction<second>(ek, Ek);
 		}
 		if(magnetic_) {
-			Bk = magnetic_->contravariant(qk, t * iBfield_time_factor_);
+			Bk = magnetic_->contravariant(qk, (t+dt) * iBfield_time_factor_);
 			Bk = contraction<second>(ek, Bk);
 		}
 
@@ -49,8 +49,8 @@ curvilinear_boris_wei::state curvilinear_boris_wei::do_step(const curvilinear_bo
 		// calculate fields
 		IR3 Ek = {0, 0, 0};
 		IR3 Bk = {0, 0, 0};
-		if(electric_) Ek = electric_->contravariant(xk, t * iEfield_time_factor_);
-		if(magnetic_) Bk = magnetic_->contravariant(xk, t * iBfield_time_factor_);
+		if(electric_) Ek = electric_->contravariant(xk, (t+dt) * iEfield_time_factor_);
+		if(magnetic_) Bk = magnetic_->contravariant(xk, (t+dt) * iBfield_time_factor_);
 
 		// perform cartesian step
 		IR3 vph = cartesian_boris(umh, Oref_, Ek, Bk, dt);
@@ -66,17 +66,17 @@ curvilinear_boris_wei::state curvilinear_boris_wei::do_step(const curvilinear_bo
 }
 
 // Returns the vector position of the state normalized to `Lref`.
-IR3 curvilinear_boris_wei::get_position(const curvilinear_boris_wei::state& s) {
+IR3 curvilinear_boris_wei::get_position(const curvilinear_boris_wei::state& s) const {
 	return {s[0], s[1], s[2]};
 }
 
 // Returns the vector velocity of the state normalized to `Vref`.
-IR3 curvilinear_boris_wei::get_velocity(const curvilinear_boris_wei::state& s) {
+IR3 curvilinear_boris_wei::get_velocity(const curvilinear_boris_wei::state& s) const {
 	return {s[3], s[4], s[5]};
 }
 
 // Returns the kinetic energy of the state, normalized to `Uref`.
-double curvilinear_boris_wei::get_kinetic_energy(const curvilinear_boris_wei::state& s) {
+double curvilinear_boris_wei::get_kinetic_energy(const curvilinear_boris_wei::state& s) const {
 	if(field_morph_) {
 
 		IR3 qmh = {s[6], s[7], s[8]};
@@ -155,14 +155,11 @@ curvilinear_boris_wei::state curvilinear_boris_wei::generate_initial_state(
 	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;
 
-	rk4.do_step(sys, in, tinit, out, -0.5*dt);
-	IR3 qmh = em.get_position(out);
-	IR3 umh = em.get_velocity(out);
+	rk4.do_step(sys, in, tinit, out, 0.5*dt);
+	IR3 qph = em.get_position(out);
+	IR3 uph = em.get_velocity(out);
 
-	rk4.do_step(sys, in, tinit, out, -dt);
-	IR3 qm1 = em.get_position(out);
-
-	return generate_state(qm1, umh, qmh);
+	return generate_state(qk, uph, qph);
 }
 
 // Performs a boris step in cartesian coordinates.
