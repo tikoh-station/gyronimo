@@ -21,7 +21,7 @@ class boris_advanced {
 public:
 
 	//! State variable of the stepper.
-	typedef std::array<double,9> state;
+	typedef std::array<double,6> state;
 
 	//! Class Constructor.
 	boris_advanced(const double Lref, const double Vref, const double qom, const IR3field *E, const IR3field *B, const morphism *morph = NULL)
@@ -55,7 +55,7 @@ public:
 	double get_perpendicular_energy(const state& s, double &time) const;
 
 	//! Returns the `curvilinear_boris::state` from a normalized point in phase-space.
-	state generate_state(const IR3 &position, const IR3 &velocity, const IR3 &velocity_position) const;
+	state generate_state(const IR3 &position, const IR3 &velocity) const;
 
 	// Creates the first `boris_advanced::state` from a normalized point in cartesian phase-space.
 	state generate_initial_state(const IR3 &cartesian_position, 

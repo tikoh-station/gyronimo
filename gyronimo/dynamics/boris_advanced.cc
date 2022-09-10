@@ -6,58 +6,58 @@ namespace gyronimo {
 boris_advanced::state boris_advanced::do_step(const boris_advanced::state &in, const double t, const double dt) const {
 
 	// extract position and velocity from state
-	IR3 qm1 = {in[0], in[1], in[2]};
+	IR3 qk = {in[0], in[1], in[2]};
 	IR3 umh = {in[3], in[4], in[5]};
-	IR3 qmh = {in[6], in[7], in[8]};
 
 	if(field_morph_) {
 
-		IR3 qk = qm1 + umh * dt;
 		dIR3 ek  = field_morph_->del(qk);
 		dIR3 eek = inverse(ek);
-
-		IR3 vmh = field_morph_->from_contravariant(qmh, umh);
+		IR3 vmh = contraction<second>(ek, umh);
 
 		// calculate fields
 		IR3 Ek = {0, 0, 0};
 		IR3 Bk = {0, 0, 0};
 		if(electric_) {
-			Ek = electric_->contravariant(qk, (t+dt) * iEfield_time_factor_);
+			Ek = electric_->contravariant(qk, t * iEfield_time_factor_);
 			Ek = contraction<second>(ek, Ek);
 		}
 		if(magnetic_) {
-			Bk = magnetic_->contravariant(qk, (t+dt) * iBfield_time_factor_);
+			Bk = magnetic_->contravariant(qk, t * iBfield_time_factor_);
 			Bk = contraction<second>(ek, Bk);
 		}
 
 		// perform cartesian step
 		IR3 vph = cartesian_boris(vmh, Oref_, Ek, Bk, dt);
-		IR3 qph = qk + (0.25 * dt) * contraction<second>(eek, vph + vmh);
-		dIR3 eeph = field_morph_->del_inverse(qph);
-		IR3 uph = contraction<second>(eeph, vph);
+		
+		// RK2 with minimum error coefficients
+		IR3 uuph = contraction<second>(eek, vph);
+		IR3 qpt = qk + (2./3. * dt) * uuph;
+		dIR3 eept = field_morph_->del_inverse(qpt);
+		IR3 upt = contraction<second>(eept, vph);
 
-		return { qk[IR3::u],  qk[IR3::v],  qk[IR3::w],
-				uph[IR3::u], uph[IR3::v], uph[IR3::w],
-				qph[IR3::u], qph[IR3::v], qph[IR3::w]};
+		// new state
+		IR3 qp1 = qk + (0.25 * dt) * uuph + (0.75 * dt) * upt;
+		IR3 uph = field_morph_->to_contravariant(qp1, vph);
+
+		return {qp1[IR3::u], qp1[IR3::v], qp1[IR3::w],
+				uph[IR3::u], uph[IR3::v], uph[IR3::w]};
 
 	} else {
-
-		IR3 xk = qm1 + umh * dt;
 
 		// calculate fields
 		IR3 Ek = {0, 0, 0};
 		IR3 Bk = {0, 0, 0};
-		if(electric_) Ek = electric_->contravariant(xk, (t+dt) * iEfield_time_factor_);
-		if(magnetic_) Bk = magnetic_->contravariant(xk, (t+dt) * iBfield_time_factor_);
+		if(electric_) Ek = electric_->contravariant(qk, t * iEfield_time_factor_);
+		if(magnetic_) Bk = magnetic_->contravariant(qk, t * iBfield_time_factor_);
 
 		// perform cartesian step
 		IR3 vph = cartesian_boris(umh, Oref_, Ek, Bk, dt);
 
-		IR3 xph = xk + (0.5 * dt) * vph;
+		IR3 qp1 = qk + dt * vph;
 
-		return { xk[IR3::u],  xk[IR3::v],  xk[IR3::w],
-				vph[IR3::u], vph[IR3::v], vph[IR3::w],
-				xph[IR3::u], xph[IR3::v], xph[IR3::w]};
+		return {qp1[IR3::u], qp1[IR3::v], qp1[IR3::w],
+				vph[IR3::u], vph[IR3::v], vph[IR3::w]};
 
 	}
 
@@ -77,10 +77,9 @@ IR3 boris_advanced::get_velocity(const boris_advanced::state& s) const {
 double boris_advanced::get_kinetic_energy(const boris_advanced::state& s) const {
 	if(field_morph_) {
 
-		IR3 qmh = {s[6], s[7], s[8]};
+		IR3 qk = {s[0], s[1], s[2]};
 		IR3 umh = {s[3], s[4], s[5]};
-		dIR3 emh = field_morph_->del(qmh);
-		IR3 vmh = contraction<second>(emh, umh);
+		IR3 vmh = field_morph_->from_contravariant(qk, umh);
 
 		return vmh[IR3::u] * vmh[IR3::u] + vmh[IR3::v] * vmh[IR3::v] + vmh[IR3::w] * vmh[IR3::w];
 
@@ -89,7 +88,7 @@ double boris_advanced::get_kinetic_energy(const boris_advanced::state& s) const 
 
 // Returns the parallel energy of the state, normalized to `Uref`.
 double boris_advanced::get_parallel_energy(const boris_advanced::state& s, double &time) const {
-	IR3 q = {s[6], s[7], s[8]};
+	IR3 q = {s[0], s[1], s[2]};
 	IR3 u = {s[3], s[4], s[5]};
 	if(magnetic_) {
 		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
@@ -110,7 +109,7 @@ double boris_advanced::get_parallel_energy(const boris_advanced::state& s, doubl
 
 // Returns the perpendicular energy of the state, normalized to `Uref`.
 double boris_advanced::get_perpendicular_energy(const boris_advanced::state& s, double &time) const {
-	IR3 q = {s[6], s[7], s[8]};
+	IR3 q = {s[0], s[1], s[2]};
 	IR3 u = {s[3], s[4], s[5]};
 	if(magnetic_) {
 		IR3 b = magnetic_->contravariant_versor(q, time * iBfield_time_factor_);
@@ -130,10 +129,9 @@ double boris_advanced::get_perpendicular_energy(const boris_advanced::state& s, 
 }
 
 // Returns the `boris_advanced::state` from a normalized point in phase-space.
-boris_advanced::state boris_advanced::generate_state(const IR3 &pos, const IR3 &vel, const IR3 &pph) const {
+boris_advanced::state boris_advanced::generate_state(const IR3 &pos, const IR3 &vel) const {
 	return {pos[IR3::u], pos[IR3::v], pos[IR3::w],
-			vel[IR3::u], vel[IR3::v], vel[IR3::w],
-			pph[IR3::u], pph[IR3::v], pph[IR3::w]};
+			vel[IR3::u], vel[IR3::v], vel[IR3::w]};
 }
 
 // Creates the first `boris_advanced::state` from a normalized point in cartesian phase-space.
@@ -153,11 +151,17 @@ boris_advanced::state boris_advanced::generate_initial_state(
 	electromagnetic_system::state in = em.generate_state(qk, uk);
 	electromagnetic_system::state out;
 
-	rk4.do_step(sys, in, tinit, out, 0.5*dt);
-	IR3 qph = em.get_position(out);
-	IR3 uph = em.get_velocity(out);
+	rk4.do_step(sys, in, tinit, out, -0.5*dt);
+	IR3 qmh = em.get_position(out);
+	IR3 umh = em.get_velocity(out);
 
-	return generate_state(qk, uph, qph);
+	if(field_morph_) {
+		IR3 vmh = field_morph_->from_contravariant(qmh, umh);
+		IR3 uumh = field_morph_->to_contravariant(qk, vmh);
+
+		return generate_state(qk, uumh);
+
+	} else return generate_state(qk, umh);
 }
 
 // Performs a boris step in cartesian coordinates.
