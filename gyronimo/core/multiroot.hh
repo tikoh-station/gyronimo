@@ -26,7 +26,6 @@
 #include <gsl/gsl_multiroots.h>
 #include <gyronimo/core/error.hh>
 #include <gyronimo/core/generators.hh>
-#include <iostream>
 
 namespace gyronimo {
 
