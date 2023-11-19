@@ -30,7 +30,8 @@ equilibrium_vmec::equilibrium_vmec(
     : IR3field_c1(std::abs(g->my_parser()->B0()), 1.0, g),
       metric_(g), parser_(g->my_parser()), harmonics_(parser_->mnmax_nyq()),
       m_(parser_->xm_nyq()), n_(parser_->xn_nyq()), index_(harmonics_),
-      btheta_mn_(parser_->mnmax_nyq()), bzeta_mn_(parser_->mnmax_nyq()) {
+      btheta_mn_(parser_->mnmax_nyq()), bzeta_mn_(parser_->mnmax_nyq()),
+      m_phasors_(m_), n_phasors_(n_) {
   std::iota(index_.begin(), index_.end(), 0);
   this->build_interpolator_array(
       bzeta_mn_, parser_->bsupvmnc() / this->m_factor(), ifactory);
@@ -96,12 +97,13 @@ const equilibrium_vmec::cis_container_t& equilibrium_vmec::cached_cis(
   thread_local double cached_theta = -1e6, cached_zeta = -1e6;
   thread_local cis_container_t cis_mn(harmonics_);
   if (theta != cached_theta || zeta != cached_zeta) {
-    std::transform(
-        index_.begin(), index_.end(), cis_mn.begin(),
-        [&](size_t i) -> cis_container_t::value_type {
-          double angle_mn = m_[i] * theta - n_[i] * zeta;
-          return {std::cos(angle_mn), std::sin(angle_mn)};
-        });
+    cis_mn = m_phasors_(theta) * n_phasors_(-zeta);
+    // std::transform(
+    //     index_.begin(), index_.end(), cis_mn.begin(),
+    //     [&](size_t i) -> cis_container_t::value_type {
+    //       double angle_mn = m_[i] * theta - n_[i] * zeta;
+    //       return {std::cos(angle_mn), std::sin(angle_mn)};
+    //     });
     cached_theta = theta;
     cached_zeta = zeta;
   }

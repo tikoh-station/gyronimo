@@ -23,6 +23,7 @@
 #include <gyronimo/interpolators/interpolator1d.hh>
 #include <gyronimo/metrics/morphism.hh>
 #include <gyronimo/parsers/parser_vmec.hh>
+#include <gyronimo/core/fourier_phasors.hh>
 
 #include <complex>
 #include <memory>
@@ -61,8 +62,9 @@ class morphism_vmec : public morphism {
   const narray_type m_, n_;
   std::vector<size_t> index_;
   std::vector<std::unique_ptr<interpolator1d>> r_mn_, z_mn_;
+  const fourier_phasors m_phasors_, n_phasors_;
 
-  using cis_container_t = std::vector<std::complex<double>>;
+  using cis_container_t = std::valarray<std::complex<double>>;
   const cis_container_t& cached_cis(double theta, double zeta) const;
   IR3 inverse(const IR3& x, const std::pair<double, double>& guess) const;
   std::pair<double, double> reflection_past_axis(

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with ::gyronimo::.  If not, see <https://www.gnu.org/licenses/>.
 
-// @mrophism_vmec.cc, this file is part of ::gyronimo::
+// @morphism_vmec.cc, this file is part of ::gyronimo::
 
 #include <gyronimo/core/multiroot.hh>
 #include <gyronimo/metrics/morphism_vmec.hh>
@@ -30,12 +30,13 @@ const morphism_vmec::cis_container_t& morphism_vmec::cached_cis(
   thread_local double cached_theta = -1e6, cached_zeta = -1e6;
   thread_local cis_container_t cis_mn(harmonics_);
   if (theta != cached_theta || zeta != cached_zeta) {
-    std::transform(
-        index_.begin(), index_.end(), cis_mn.begin(),
-        [&](size_t i) -> cis_container_t::value_type {
-          double angle_mn = m_[i] * theta - n_[i] * zeta;
-          return {std::cos(angle_mn), std::sin(angle_mn)};
-        });
+    cis_mn = m_phasors_(theta) * n_phasors_(-zeta);
+    // std::transform(
+    //     index_.begin(), index_.end(), cis_mn.begin(),
+    //     [&](size_t i) -> cis_container_t::value_type {
+    //       double angle_mn = m_[i] * theta - n_[i] * zeta;
+    //       return {std::cos(angle_mn), std::sin(angle_mn)};
+    //     });
     cached_theta = theta;
     cached_zeta = zeta;
   }
@@ -45,7 +46,8 @@ const morphism_vmec::cis_container_t& morphism_vmec::cached_cis(
 morphism_vmec::morphism_vmec(
     const parser_vmec* p, const interpolator1d_factory* ifactory)
     : parser_(p), harmonics_(p->mnmax()), m_(p->xm()), n_(p->xn()),
-      index_(harmonics_), r_mn_(p->mnmax()), z_mn_(p->mnmax()) {
+      index_(harmonics_), r_mn_(p->mnmax()), z_mn_(p->mnmax()), 
+      m_phasors_(m_), n_phasors_(n_) {
   std::iota(index_.begin(), index_.end(), 0);
   this->build_interpolator_array(r_mn_, parser_->rmnc(), ifactory);
   this->build_interpolator_array(z_mn_, parser_->zmns(), ifactory);

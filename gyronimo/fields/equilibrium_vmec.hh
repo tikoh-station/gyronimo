@@ -23,6 +23,7 @@
 #include <gyronimo/fields/IR3field_c1.hh>
 #include <gyronimo/interpolators/interpolator2d.hh>
 #include <gyronimo/metrics/metric_vmec.hh>
+#include <gyronimo/core/fourier_phasors.hh>
 
 #include <complex>
 #include <memory>
@@ -70,12 +71,13 @@ class equilibrium_vmec : public IR3field_c1 {
   const narray_type m_, n_;
   std::vector<size_t> index_;
   std::vector<std::unique_ptr<interpolator1d>> btheta_mn_, bzeta_mn_;
+  fourier_phasors m_phasors_, n_phasors_;
 
   void build_interpolator_array(
       std::vector<std::unique_ptr<interpolator1d>>& interpolator_array,
       const narray_type& samples_array, const interpolator1d_factory* ifactory);
 
-  typedef std::vector<std::complex<double>> cis_container_t;
+  using cis_container_t = std::valarray<std::complex<double>>;
   const cis_container_t& cached_cis(double theta, double zeta) const;
 
   struct auxiliar1_t {
